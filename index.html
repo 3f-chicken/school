@@ -1,0 +1,437 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宿舍人員狀態追蹤</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f4f8;
+        }
+        
+        .status-card {
+            transition: all 0.3s ease;
+        }
+        
+        .status-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .status-in {
+            background-color: #d1fae5;
+            border-left: 4px solid #10b981;
+        }
+        
+        .status-out {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .btn-in {
+            background-color: #10b981;
+        }
+        
+        .btn-in:hover {
+            background-color: #059669;
+        }
+        
+        .btn-out {
+            background-color: #ef4444;
+        }
+        
+        .btn-out:hover {
+            background-color: #dc2626;
+        }
+        
+        .member-name {
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .member-name:hover {
+            border-color: #e5e7eb;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .member-name:focus {
+            outline: none;
+            border-color: #93c5fd;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.3);
+        }
+        
+        .floor-section {
+            border-radius: 0.75rem;
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .floor-title {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        .floor-1 {
+            background-color: #8b5cf6;
+        }
+        
+        .floor-2 {
+            background-color: #3b82f6;
+        }
+        
+        .room-number {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">宿舍人員狀態追蹤</h1>
+            <p class="text-gray-600">點擊按鈕更新你的在宿/離宿狀態，點擊名稱可編輯</p>
+        </header>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-700 mb-2 md:mb-0">目前狀態總覽</h2>
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                        <span class="text-sm text-gray-600">在宿: <span id="in-count">0</span>人</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                        <span class="text-sm text-gray-600">離宿: <span id="out-count">0</span>人</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div id="status-bar" class="h-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <!-- 1F 區域 -->
+        <div class="floor-section mb-8">
+            <h2 class="floor-title floor-1">1F</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- 1F 住宿成員卡片 -->
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="1" data-floor="1" data-room="B101">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B101</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 1</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+                
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="2" data-floor="1" data-room="B102">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B102</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 2</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+                
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="3" data-floor="1" data-room="B103">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B103</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 3</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+                
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="4" data-floor="1" data-room="B104">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B104</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 4</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+                
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="5" data-floor="1" data-room="B105">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B105</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 5</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+                
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="6" data-floor="1" data-room="B106">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B106</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 6</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 2F 區域 -->
+        <div class="floor-section">
+            <h2 class="floor-title floor-2">2F</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- 2F 住宿成員卡片 -->
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="7" data-floor="2" data-room="B201">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B201</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 7</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+                
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="8" data-floor="2" data-room="B202">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B202</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 8</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+                
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="9" data-floor="2" data-room="B203">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B203</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 9</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+                
+                <div class="status-card status-out rounded-lg shadow-md p-4" data-id="10" data-floor="2" data-room="B204">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="room-number">B204</span>
+                        <span class="status-badge px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">離宿中</span>
+                    </div>
+                    <div class="mb-3">
+                        <h3 class="font-medium text-gray-800 member-name" contenteditable="true" spellcheck="false">成員 10</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="btn-in px-3 py-2 rounded text-white text-sm w-1/2 transition">在宿</button>
+                        <button class="btn-out px-3 py-2 rounded text-white text-sm w-1/2 transition opacity-50">離宿</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-8 text-center text-sm text-gray-500">
+            <p>最後更新時間: <span id="last-updated">-</span></p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 從本地存儲加載數據
+            loadStatusData();
+            
+            // 添加按鈕事件監聽器
+            document.querySelectorAll('.status-card').forEach(card => {
+                const inBtn = card.querySelector('.btn-in');
+                const outBtn = card.querySelector('.btn-out');
+                
+                inBtn.addEventListener('click', () => updateStatus(card.dataset.id, 'in'));
+                outBtn.addEventListener('click', () => updateStatus(card.dataset.id, 'out'));
+            });
+            
+            // 添加名稱編輯事件監聽器
+            document.querySelectorAll('.member-name').forEach(nameElement => {
+                nameElement.addEventListener('blur', function() {
+                    saveStatusData();
+                });
+                
+                // 防止按下 Enter 鍵時換行
+                nameElement.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.blur();
+                    }
+                });
+            });
+            
+            // 更新狀態計數和進度條
+            updateStatusCounts();
+        });
+        
+        function updateStatus(id, status) {
+            const card = document.querySelector(`.status-card[data-id="${id}"]`);
+            const statusBadge = card.querySelector('.status-badge');
+            const inBtn = card.querySelector('.btn-in');
+            const outBtn = card.querySelector('.btn-out');
+            
+            // 更新卡片樣式
+            if (status === 'in') {
+                card.classList.remove('status-out');
+                card.classList.add('status-in');
+                statusBadge.textContent = '在宿中';
+                statusBadge.classList.remove('bg-red-100', 'text-red-800');
+                statusBadge.classList.add('bg-green-100', 'text-green-800');
+                inBtn.classList.add('opacity-50');
+                outBtn.classList.remove('opacity-50');
+            } else {
+                card.classList.remove('status-in');
+                card.classList.add('status-out');
+                statusBadge.textContent = '離宿中';
+                statusBadge.classList.remove('bg-green-100', 'text-green-800');
+                statusBadge.classList.add('bg-red-100', 'text-red-800');
+                outBtn.classList.add('opacity-50');
+                inBtn.classList.remove('opacity-50');
+            }
+            
+            // 保存到本地存儲
+            saveStatusData();
+            
+            // 更新狀態計數和進度條
+            updateStatusCounts();
+            
+            // 更新最後更新時間
+            updateLastUpdated();
+        }
+        
+        function updateStatusCounts() {
+            const inCount = document.querySelectorAll('.status-in').length;
+            const outCount = document.querySelectorAll('.status-out').length;
+            const total = inCount + outCount;
+            
+            document.getElementById('in-count').textContent = inCount;
+            document.getElementById('out-count').textContent = outCount;
+            
+            // 更新進度條
+            const percentage = total > 0 ? (inCount / total) * 100 : 0;
+            document.getElementById('status-bar').style.width = `${percentage}%`;
+        }
+        
+        function saveStatusData() {
+            const statusData = {};
+            document.querySelectorAll('.status-card').forEach(card => {
+                const id = card.dataset.id;
+                const nameElement = card.querySelector('.member-name');
+                
+                statusData[id] = {
+                    status: card.classList.contains('status-in') ? 'in' : 'out',
+                    name: nameElement.textContent.trim(),
+                    floor: card.dataset.floor,
+                    room: card.dataset.room
+                };
+            });
+            
+            localStorage.setItem('dormStatusData', JSON.stringify(statusData));
+            localStorage.setItem('dormLastUpdated', new Date().toISOString());
+        }
+        
+        function loadStatusData() {
+            const statusData = JSON.parse(localStorage.getItem('dormStatusData')) || {};
+            const lastUpdated = localStorage.getItem('dormLastUpdated');
+            
+            // 加載狀態數據
+            Object.keys(statusData).forEach(id => {
+                const card = document.querySelector(`.status-card[data-id="${id}"]`);
+                if (card) {
+                    // 加載狀態
+                    if (statusData[id].status === 'in') {
+                        updateStatus(id, 'in');
+                    }
+                    
+                    // 加載名稱
+                    if (statusData[id].name) {
+                        const nameElement = card.querySelector('.member-name');
+                        if (nameElement) {
+                            nameElement.textContent = statusData[id].name;
+                        }
+                    }
+                }
+            });
+            
+            // 加載最後更新時間
+            if (lastUpdated) {
+                updateLastUpdated(new Date(lastUpdated));
+            } else {
+                updateLastUpdated();
+            }
+        }
+        
+        function updateLastUpdated(date = new Date()) {
+            const options = { 
+                year: 'numeric', 
+                month: 'numeric', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('last-updated').textContent = date.toLocaleString('zh-TW', options);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'937b4a9116144a98',t:'MTc0NTg5MjkyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
